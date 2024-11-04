@@ -51,6 +51,21 @@ namespace webview_cef {
 					webview_value_unref(retMap);
 				}
 			};
+			m_handler->onNavigationRequest = [=](int browserId, std::string url) -> bool {
+			    if (m_invokeFunc) {
+			        WValue* bId = webview_value_new_int(browserId);
+			        WValue* wUrl = webview_value_new_string(const_cast<char*>(url.c_str()));
+			        WValue* retMap = webview_value_new_map();
+			        webview_value_set_string(retMap, "browserId", bId);
+			        webview_value_set_string(retMap, "url", wUrl);
+			        m_invokeFunc("navigationRequest", retMap);
+			        webview_value_unref(bId);
+			        webview_value_unref(wUrl);
+			        webview_value_unref(retMap);
+			        return true; // Return true or false based on your logic
+			    }
+			    return false; // Default return value
+			};
 
 			m_handler->onCursorChangedEvent = [=](int browserId, int type) {
 				if(m_invokeFunc){

@@ -20,6 +20,7 @@ class WebviewManager extends ValueNotifier<bool> {
 
   final Map<int, WebViewController> _tempWebViews = <int, WebViewController>{};
   InjectUserScripts? _injectUserScripts = InjectUserScripts();
+  Function(int browserId, String url)? onNavigationRequest;
 
   int nextIndex = 1;
 
@@ -77,8 +78,13 @@ class WebviewManager extends ValueNotifier<bool> {
     _tempWebViews.remove(browserIndex);
   }
 
-  Future<void> methodCallhandler(MethodCall call) async {
+  Future<dynamic> methodCallhandler(MethodCall call) async {
     switch (call.method) {
+      case 'navigationRequest':
+        int browserId = call.arguments['browserId'] as int;
+        String url = call.arguments['url'] as String;
+        bool allow = onNavigationRequest?.call(browserId, url) ?? true;
+        return allow;
       case "urlChanged":
         int browserId = call.arguments["browserId"] as int;
         _webViews[browserId]

@@ -37,6 +37,7 @@ class WebViewController extends ValueNotifier<bool> {
   Map<String, JavascriptChannel> get javascriptChannels => _javascriptChannels;
   WebviewEventsListener? _listener;
   WebviewEventsListener? get listener => _listener;
+  Function(String url)? onNavigationRequest;
 
   get onJavascriptChannelMessage => (final String channelName,
           final String message, final String callbackId, final String frameId) {
@@ -68,6 +69,12 @@ class WebViewController extends ValueNotifier<bool> {
       WebviewManager().onBrowserCreated(_index, _browserId);
       await Future.delayed(const Duration(milliseconds: 50));
       _webviewWidget = WebView(this);
+      WebviewManager().onNavigationRequest = (browserId, url) {
+      if (browserId == _browserId) {
+        return onNavigationRequest?.call(url) ?? true;
+      }
+      return true;
+    };
       value = true;
       _creatingCompleter.complete();
     } on PlatformException catch (e) {

@@ -58,6 +58,20 @@ WebviewHandler::~WebviewHandler() {
     js_callbacks_.clear();
 }
 
+bool WebviewHandler::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                                    CefRefPtr<CefFrame> frame,
+                                    CefRefPtr<CefRequest> request,
+                                    bool user_gesture,
+                                    bool is_redirect) {
+    if (onNavigationRequest) {
+        bool allow = onNavigationRequest(browser->GetIdentifier(), request->GetURL());
+        if (!allow) {
+            return true; // Cancel navigation
+        }
+    }
+    return false; // Allow navigation
+}
+
 bool WebviewHandler::OnProcessMessageReceived(
     CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
      CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
@@ -169,7 +183,7 @@ bool WebviewHandler::OnBeforePopup(CefRefPtr<CefBrowser> browser,
                                   CefRefPtr<CefFrame> frame,
                                   const CefString& target_url,
                                   const CefString& target_frame_name,
-                                  WindowOpenDisposition target_disposition,
+                                  CefLifeSpanHandler::WindowOpenDisposition target_disposition,
                                   bool user_gesture,
                                   const CefPopupFeatures& popupFeatures,
                                   CefWindowInfo& windowInfo,

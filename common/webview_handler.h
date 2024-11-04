@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "webview_cookieVisitor.h"
+#include "cef_request_handler.h"
 
 #define ColorUNDERLINE \
   0xFF000000  // Black SkColor value for underline,
@@ -33,10 +34,13 @@ struct browser_info{
 class WebviewHandler : public CefClient,
 public CefDisplayHandler,
 public CefLifeSpanHandler,
+public CefRequestHandler,
 public CefFocusHandler,
 public CefLoadHandler,
 public CefRenderHandler{
 public:
+    // navigation request
+    std::function<bool(int browserId, std::string url)> onNavigationRequest;
     //Paint callback
     std::function<void(int browserId, const void* buffer, int32_t width, int32_t height)> onPaintCallback;
     //cef message event
@@ -51,7 +55,7 @@ public:
     std::function<void(std::string, std::string, std::string, int browserId, std::string)> onJavaScriptChannelMessage;
     std::function<void(int browserId, std::string url)> onLoadStart;
     std::function<void(int browserId, std::string url)> onLoadEnd;
-    
+
     explicit WebviewHandler();
     ~WebviewHandler();
     
@@ -63,6 +67,9 @@ public:
         return this;
     }
     virtual CefRefPtr<CefFocusHandler> GetFocusHandler() override {
+        return this;
+    }
+    virtual CefRefPtr<CefRequestHandler> GetRequestHandler() override {
         return this;
     }
     virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
@@ -100,7 +107,7 @@ public:
                                CefRefPtr<CefFrame> frame,
                                const CefString& target_url,
                                const CefString& target_frame_name,
-                               WindowOpenDisposition target_disposition,
+                               CefLifeSpanHandler::WindowOpenDisposition target_disposition,
                                bool user_gesture,
                                const CefPopupFeatures& popupFeatures,
                                CefWindowInfo& windowInfo,
@@ -137,6 +144,12 @@ public:
                                int y) override;
     virtual void OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browser,const CefRange& selection_range,const CefRenderHandler::RectList& character_bounds) override;
 
+    // CefRequestHandler methods:
+  virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+                              CefRefPtr<CefFrame> frame,
+                              CefRefPtr<CefRequest> request,
+                              bool user_gesture,
+                              bool is_redirect) override;
     // Request that all existing browser windows close.
     void CloseAllBrowsers(bool force_close);
     
