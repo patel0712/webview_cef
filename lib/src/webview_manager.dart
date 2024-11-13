@@ -81,13 +81,13 @@ class WebviewManager extends ValueNotifier<bool> {
     switch (call.method) {
       case "navigationRequest":
         int browserId = call.arguments["browserId"] as int;
-        String url = call.arguments["url"] as String;
-        print("[webview_manager.dart] navigationRequest called with Browser ID: $browserId, URL: $url");
-
-        bool allow = await _webViews[browserId]?.delegate?.onNavigationRequest?.call(url) ?? true;
-        print("[webview_manager.dart] Decision to allow navigation: $allow");
-
-        return allow;
+          bool allow = _webViews[browserId]
+            ?.delegate
+            ?.onNavigationRequest
+            ?.call(call.arguments["url"] as String) ?? true;
+          print("ISAllow ===> $allow");
+          int allow_flag = allow == true ? 1 : 0;
+        return allow_flag;
 
       case "urlChanged":
         int browserId = call.arguments["browserId"] as int;

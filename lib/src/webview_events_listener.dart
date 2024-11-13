@@ -32,3 +32,11 @@ class WebviewEventsListener {
     this.onLoadEnd,
   });
 }
+
+class NavigationDelegate{
+  OnNavigationRequestCb? onNavigationRequest;
+
+  NavigationDelegate({
+    this.onNavigationRequest,
+  });
+}

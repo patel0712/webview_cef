@@ -71,15 +71,11 @@ bool WebviewHandler::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
     if (onNavigationRequest) {
         // Call onNavigationRequest and pass the browser ID and request URL
         bool allow = onNavigationRequest(browser->GetIdentifier(), request->GetURL());
-
-        // Debugging print to check the allow flag in the native side
-        std::cout << "[webview_handler.cc] is_allow_to_go (computed from allow) ===> " << allow << std::endl;
-
-        return !allow; // Return true to cancel navigation, false to allow
+        if (!allow) {
+            return true; // Cancel navigation
+        }
     }
-    
-    std::cout << "[webview_handler.cc] onNavigationRequest is null, allowing navigation" << std::endl;
-    return false; // Allow navigation by default if no handler
+    return false; // Allow navigation
 }
 
 

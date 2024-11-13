@@ -108,15 +108,16 @@ class _MyAppState extends State<MyApp> {
 
     await _controller.initialize(_textController.text);
 
-    _controller.setNavigationDelegate(
-        NavigationDelegate(onNavigationRequest: ((url) async {
-      print("DART_URL ===> $url");
-      if (url.contains("https://www.moon_inout_flutter_google_login/")) {
-        return false;
-      }
-      return true;
-    })));
-
+    _controller.setNavigationDelegate(NavigationDelegate(
+      onNavigationRequest: (url) {
+        print("Callback_URL =====> $url");
+        if (url.contains("https://www.moon_inout_flutter_google_login")) {
+          // _redirect("https://accounts.google.com/o/oauth2/v2/auth");
+          return false;  // Block specific URL
+        }
+        return true;  // Allow all other URLs
+      },
+    ));
     // _controller2.setWebviewListener(WebviewEventsListener(
     //   onTitleChanged: (t) {},
     //   onUrlChanged: (url) {
