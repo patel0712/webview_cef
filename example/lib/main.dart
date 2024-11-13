@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     await WebviewManager().initialize(userAgent: "test/userAgent");
-    String url = "www.baidu.com";
+    String url = "https://beta2.moontechnolabs.com/clockinout/#/login";
     _textController.text = url;
     //unified interface for all platforms set user agent
     _controller.setWebviewListener(WebviewEventsListener(
@@ -97,14 +97,25 @@ class _MyAppState extends State<MyApp> {
             .then((value) => print(value));
       },
       onLoadStart: (controller, url) {
-        print("onLoadStart => $url");
+        // print("onLoadStart => $url");
+        controller.executeJavaScript("document.cookie='hrm_flutter_platform=flutter'");
+        controller.executeJavaScript("document.cookie='target_platform=linux'");
       },
       onLoadEnd: (controller, url) {
-        print("onLoadEnd => $url");
+        // print("onLoadEnd => $url");
       },
     ));
 
     await _controller.initialize(_textController.text);
+
+    _controller.setNavigationDelegate(
+        NavigationDelegate(onNavigationRequest: ((url) async {
+      print("DART_URL ===> $url");
+      if (url.contains("https://www.moon_inout_flutter_google_login/")) {
+        return false;
+      }
+      return true;
+    })));
 
     // _controller2.setWebviewListener(WebviewEventsListener(
     //   onTitleChanged: (t) {},

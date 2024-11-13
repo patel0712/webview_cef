@@ -58,19 +58,31 @@ WebviewHandler::~WebviewHandler() {
     js_callbacks_.clear();
 }
 
+// webview_handler.cc
 bool WebviewHandler::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
                                     CefRefPtr<CefFrame> frame,
                                     CefRefPtr<CefRequest> request,
                                     bool user_gesture,
                                     bool is_redirect) {
+    std::string url = request->GetURL();
+    std::cout << "[webview_handler.cc] OnBeforeBrowse called" << std::endl;
+    std::cout << "Request URL: " << "url" << std::endl;
+
     if (onNavigationRequest) {
+        // Call onNavigationRequest and pass the browser ID and request URL
         bool allow = onNavigationRequest(browser->GetIdentifier(), request->GetURL());
-        if (!allow) {
-            return true; // Cancel navigation
-        }
+
+        // Debugging print to check the allow flag in the native side
+        std::cout << "[webview_handler.cc] is_allow_to_go (computed from allow) ===> " << allow << std::endl;
+
+        return !allow; // Return true to cancel navigation, false to allow
     }
-    return false; // Allow navigation
+    
+    std::cout << "[webview_handler.cc] onNavigationRequest is null, allowing navigation" << std::endl;
+    return false; // Allow navigation by default if no handler
 }
+
+
 
 bool WebviewHandler::OnProcessMessageReceived(
     CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,

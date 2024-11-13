@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_cef/src/webview_inject_user_script.dart';
+import 'package:webview_cef/webview_cef.dart';
 
 import 'webview_manager.dart';
 import 'webview_events_listener.dart';
@@ -36,8 +37,9 @@ class WebViewController extends ValueNotifier<bool> {
       <String, JavascriptChannel>{};
   Map<String, JavascriptChannel> get javascriptChannels => _javascriptChannels;
   WebviewEventsListener? _listener;
+  NavigationDelegate? _delegate;
   WebviewEventsListener? get listener => _listener;
-  Function(String url)? onNavigationRequest;
+  NavigationDelegate? get delegate => _delegate;
 
   get onJavascriptChannelMessage => (final String channelName,
           final String message, final String callbackId, final String frameId) {
@@ -63,18 +65,13 @@ class WebViewController extends ValueNotifier<bool> {
     _creatingCompleter = Completer<void>();
     try {
       await WebviewManager().ready;
+      print('Invoking create method with URL: $url');
       List args = await _pluginChannel.invokeMethod('create', url);
       _browserId = args[0] as int;
       _textureId = args[1] as int;
       WebviewManager().onBrowserCreated(_index, _browserId);
       await Future.delayed(const Duration(milliseconds: 50));
       _webviewWidget = WebView(this);
-      WebviewManager().onNavigationRequest = (browserId, url) {
-      if (browserId == _browserId) {
-        return onNavigationRequest?.call(url) ?? true;
-      }
-      return true;
-    };
       value = true;
       _creatingCompleter.complete();
     } on PlatformException catch (e) {
@@ -85,6 +82,10 @@ class WebViewController extends ValueNotifier<bool> {
 
   setWebviewListener(WebviewEventsListener listener) {
     _listener = listener;
+  }
+
+  setNavigationDelegate(NavigationDelegate delegate) {
+    _delegate = delegate;
   }
 
   @override

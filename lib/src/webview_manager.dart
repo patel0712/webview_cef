@@ -20,7 +20,6 @@ class WebviewManager extends ValueNotifier<bool> {
 
   final Map<int, WebViewController> _tempWebViews = <int, WebViewController>{};
   InjectUserScripts? _injectUserScripts = InjectUserScripts();
-  Function(int browserId, String url)? onNavigationRequest;
 
   int nextIndex = 1;
 
@@ -80,11 +79,16 @@ class WebviewManager extends ValueNotifier<bool> {
 
   Future<dynamic> methodCallhandler(MethodCall call) async {
     switch (call.method) {
-      case 'navigationRequest':
-        int browserId = call.arguments['browserId'] as int;
-        String url = call.arguments['url'] as String;
-        bool allow = onNavigationRequest?.call(browserId, url) ?? true;
+      case "navigationRequest":
+        int browserId = call.arguments["browserId"] as int;
+        String url = call.arguments["url"] as String;
+        print("[webview_manager.dart] navigationRequest called with Browser ID: $browserId, URL: $url");
+
+        bool allow = await _webViews[browserId]?.delegate?.onNavigationRequest?.call(url) ?? true;
+        print("[webview_manager.dart] Decision to allow navigation: $allow");
+
         return allow;
+
       case "urlChanged":
         int browserId = call.arguments["browserId"] as int;
         _webViews[browserId]
@@ -157,6 +161,8 @@ class WebviewManager extends ValueNotifier<bool> {
         _webViews[browserId]?.listener?.onLoadEnd?.call(controller, urlId);
         return;
       default:
+        print("[webview_manager.dart] Unhandled method call: ${call.method}");
+        return null;
     }
   }
 
